@@ -35,6 +35,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@types/express", "npm:4.17.13"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.11"],\
+            ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
             ["prettier", "npm:2.7.1"],\
@@ -1029,6 +1030,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["doctrine", "npm:3.0.0"],\
             ["esutils", "npm:2.0.3"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["dotenv", [\
+        ["npm:16.0.1", {\
+          "packageLocation": "./.yarn/cache/dotenv-npm-16.0.1-d99e72bb95-f459ffce07.zip/node_modules/dotenv/",\
+          "packageDependencies": [\
+            ["dotenv", "npm:16.0.1"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -2443,6 +2453,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["sky-timestamp-bot", "workspace:."],\
             ["@types/express", "npm:4.17.13"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.11"],\
+            ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
             ["prettier", "npm:2.7.1"],\
