@@ -39,6 +39,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
             ["prettier", "npm:2.7.1"],\
+            ["prisma", "npm:4.0.0"],\
             ["slash-create", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:5.7.0"],\
             ["ts-node", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:10.8.1"],\
             ["tslib", "npm:2.4.0"],\
@@ -162,6 +163,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@nodelib/fs.walk", "npm:1.2.8"],\
             ["@nodelib/fs.scandir", "npm:2.1.5"],\
             ["fastq", "npm:1.13.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@prisma/engines", [\
+        ["npm:3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11", {\
+          "packageLocation": "./.yarn/unplugged/@prisma-engines-npm-3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11-1a48a65443/node_modules/@prisma/engines/",\
+          "packageDependencies": [\
+            ["@prisma/engines", "npm:3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -2196,6 +2206,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["prisma", [\
+        ["npm:4.0.0", {\
+          "packageLocation": "./.yarn/unplugged/prisma-npm-4.0.0-345d2216a5/node_modules/prisma/",\
+          "packageDependencies": [\
+            ["prisma", "npm:4.0.0"],\
+            ["@prisma/engines", "npm:3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["proxy-addr", [\
         ["npm:2.0.7", {\
           "packageLocation": "./.yarn/cache/proxy-addr-npm-2.0.7-dae6552872-29c6990ce9.zip/node_modules/proxy-addr/",\
@@ -2457,6 +2477,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
             ["prettier", "npm:2.7.1"],\
+            ["prisma", "npm:4.0.0"],\
             ["slash-create", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:5.7.0"],\
             ["ts-node", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:10.8.1"],\
             ["tslib", "npm:2.4.0"],\
