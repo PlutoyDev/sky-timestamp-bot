@@ -33,9 +33,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
+            ["@discordjs/builders", "npm:0.15.0"],\
+            ["@discordjs/rest", "npm:0.5.0"],\
             ["@prisma/client", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:4.0.0"],\
             ["@types/express", "npm:4.17.13"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.11"],\
+            ["discord-api-types", "npm:0.36.0"],\
             ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
@@ -44,6 +47,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["slash-create", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:5.7.0"],\
             ["ts-node", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:10.8.1"],\
             ["tslib", "npm:2.4.0"],\
+            ["tweetnacl", "npm:1.0.3"],\
             ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"]\
           ],\
           "linkType": "SOFT"\
@@ -65,6 +69,45 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@cspotcode/source-map-support", "npm:0.8.1"],\
             ["@jridgewell/trace-mapping", "npm:0.3.9"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@discordjs/builders", [\
+        ["npm:0.15.0", {\
+          "packageLocation": "./.yarn/cache/@discordjs-builders-npm-0.15.0-77974294a8-1a8a4ffe04.zip/node_modules/@discordjs/builders/",\
+          "packageDependencies": [\
+            ["@discordjs/builders", "npm:0.15.0"],\
+            ["@sapphire/shapeshift", "npm:3.4.0"],\
+            ["@sindresorhus/is", "npm:4.6.0"],\
+            ["discord-api-types", "npm:0.33.5"],\
+            ["fast-deep-equal", "npm:3.1.3"],\
+            ["ts-mixer", "npm:6.0.1"],\
+            ["tslib", "npm:2.4.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@discordjs/collection", [\
+        ["npm:0.7.0", {\
+          "packageLocation": "./.yarn/cache/@discordjs-collection-npm-0.7.0-b46f2cfd79-141aa35a54.zip/node_modules/@discordjs/collection/",\
+          "packageDependencies": [\
+            ["@discordjs/collection", "npm:0.7.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@discordjs/rest", [\
+        ["npm:0.5.0", {\
+          "packageLocation": "./.yarn/cache/@discordjs-rest-npm-0.5.0-93d8129772-36427fd77f.zip/node_modules/@discordjs/rest/",\
+          "packageDependencies": [\
+            ["@discordjs/rest", "npm:0.5.0"],\
+            ["@discordjs/collection", "npm:0.7.0"],\
+            ["@sapphire/async-queue", "npm:1.3.2"],\
+            ["@sapphire/snowflake", "npm:3.2.2"],\
+            ["discord-api-types", "npm:0.33.5"],\
+            ["tslib", "npm:2.4.0"],\
+            ["undici", "npm:5.6.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -205,6 +248,33 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@prisma-engines-version-npm-3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11-87caafdef8-edea5a5189.zip/node_modules/@prisma/engines-version/",\
           "packageDependencies": [\
             ["@prisma/engines-version", "npm:3.16.0-49.da41d2bb3406da22087b849f0e911199ba4fbf11"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@sapphire/async-queue", [\
+        ["npm:1.3.2", {\
+          "packageLocation": "./.yarn/cache/@sapphire-async-queue-npm-1.3.2-1d2ba4d60a-348f35a278.zip/node_modules/@sapphire/async-queue/",\
+          "packageDependencies": [\
+            ["@sapphire/async-queue", "npm:1.3.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@sapphire/shapeshift", [\
+        ["npm:3.4.0", {\
+          "packageLocation": "./.yarn/cache/@sapphire-shapeshift-npm-3.4.0-2076ec6f8b-fede7cc81c.zip/node_modules/@sapphire/shapeshift/",\
+          "packageDependencies": [\
+            ["@sapphire/shapeshift", "npm:3.4.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@sapphire/snowflake", [\
+        ["npm:3.2.2", {\
+          "packageLocation": "./.yarn/cache/@sapphire-snowflake-npm-3.2.2-c8c3f1720c-315fecef47.zip/node_modules/@sapphire/snowflake/",\
+          "packageDependencies": [\
+            ["@sapphire/snowflake", "npm:3.2.2"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -1063,6 +1133,22 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["dir-glob", "npm:3.0.1"],\
             ["path-type", "npm:4.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["discord-api-types", [\
+        ["npm:0.33.5", {\
+          "packageLocation": "./.yarn/cache/discord-api-types-npm-0.33.5-95071452d2-6dcaad640c.zip/node_modules/discord-api-types/",\
+          "packageDependencies": [\
+            ["discord-api-types", "npm:0.33.5"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
+        ["npm:0.36.0", {\
+          "packageLocation": "./.yarn/cache/discord-api-types-npm-0.36.0-b2895d6e16-f81993764c.zip/node_modules/discord-api-types/",\
+          "packageDependencies": [\
+            ["discord-api-types", "npm:0.36.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -2504,9 +2590,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["sky-timestamp-bot", "workspace:."],\
+            ["@discordjs/builders", "npm:0.15.0"],\
+            ["@discordjs/rest", "npm:0.5.0"],\
             ["@prisma/client", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:4.0.0"],\
             ["@types/express", "npm:4.17.13"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.11"],\
+            ["discord-api-types", "npm:0.36.0"],\
             ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
@@ -2515,6 +2604,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["slash-create", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:5.7.0"],\
             ["ts-node", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:10.8.1"],\
             ["tslib", "npm:2.4.0"],\
+            ["tweetnacl", "npm:1.0.3"],\
             ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"]\
           ],\
           "linkType": "SOFT"\
@@ -2666,6 +2756,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["ts-mixer", [\
+        ["npm:6.0.1", {\
+          "packageLocation": "./.yarn/cache/ts-mixer-npm-6.0.1-337f6ac31f-7050f6e85a.zip/node_modules/ts-mixer/",\
+          "packageDependencies": [\
+            ["ts-mixer", "npm:6.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["ts-node", [\
         ["npm:10.8.1", {\
           "packageLocation": "./.yarn/cache/ts-node-npm-10.8.1-24280b0982-7d1aa7aa3a.zip/node_modules/ts-node/",\
@@ -2789,6 +2888,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/typescript-patch-e8b9857d0c-9096d8f6c1.zip/node_modules/typescript/",\
           "packageDependencies": [\
             ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["undici", [\
+        ["npm:5.6.0", {\
+          "packageLocation": "./.yarn/cache/undici-npm-5.6.0-b513316628-b9052c2cb9.zip/node_modules/undici/",\
+          "packageDependencies": [\
+            ["undici", "npm:5.6.0"]\
           ],\
           "linkType": "HARD"\
         }]\
