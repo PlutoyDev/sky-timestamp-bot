@@ -1,4 +1,12 @@
-import { SlashCommand, SlashCreator, CommandContext, CommandOptionType, ChannelType, ComponentType, TextInputStyle } from 'slash-create';
+import {
+  SlashCommand,
+  SlashCreator,
+  CommandContext,
+  CommandOptionType,
+  ChannelType,
+  ComponentType,
+  TextInputStyle,
+} from 'slash-create';
 import { prisma } from '../lib/prisma';
 
 export class ConfigCommand extends SlashCommand {
@@ -63,7 +71,7 @@ export class ConfigCommand extends SlashCommand {
       return ctx.editOriginal('This server has not been initialized yet\nUse `/init` to initialize it');
     }
 
-    prisma.guild.findFirst({ where: { id: guildId } })
+    prisma.guild.findFirst({ where: { id: guildId } });
 
     const { subcommands, options, channelID: channelId } = ctx;
     console.log();
@@ -75,7 +83,6 @@ export class ConfigCommand extends SlashCommand {
     const [sc_group, sc] = subcommands;
 
     if (sc === 'template') {
-      const curTemplate = 
       ctx.sendModal({
         title: 'Timestamp Template',
         components: [
@@ -88,12 +95,11 @@ export class ConfigCommand extends SlashCommand {
                 custom_id: 'template',
                 style: TextInputStyle.PARAGRAPH,
                 required: true,
-                value: 
-              }
-            ]
-          }
-        ]
-      })
+              },
+            ],
+          },
+        ],
+      });
     }
   }
 }
