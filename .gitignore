@@ -10,8 +10,10 @@
 !.yarn/cache
 #.pnp.*
 
+#Build Artifacts
 build
-
 tsconfig.tsbuildinfo
+prisma/migrations
 
+# Enviroment File
 .env
