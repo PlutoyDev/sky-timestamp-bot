@@ -1,2 +1,7 @@
 import { PrismaClient } from '../../prisma/build';
-export const prisma = new PrismaClient();
+
+const PrismaGlobal = global as typeof global & {
+  prisma: PrismaClient;
+};
+
+export const prisma = PrismaGlobal.prisma ?? new PrismaClient();

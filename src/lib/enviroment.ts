@@ -11,9 +11,12 @@ export const DISCORD_PUBLIC_KEY =
 export const DISCORD_OAUTH_SECRET = process.env.DISCORD_OAUTH_SECRET;
 export const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
+export const REDIS_URL = process.env.REDIS_URL;
+
 const requiredEnvs = {
   DISCORD_OAUTH_SECRET,
   DISCORD_BOT_TOKEN,
+  REDIS_URL,
 };
 
 Object.entries(requiredEnvs).forEach(([key, value]) => {
