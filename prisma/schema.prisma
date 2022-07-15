@@ -1,77 +1,78 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+generator dbml {
+  provider = "prisma-dbml-generator"
+  output   = "build"
+}
+
 generator client {
   provider = "prisma-client-js"
-  output = "build"
+  output   = "build"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Guild {
   id String @id @db.VarChar(20) // Discord guild ID
 
-  webhooks Webhook[]
-
-  timeConfigs  TimeConfig[]
-  recurConfigs RecurConfig[]
-  eventConfigs EventConfig[]
+  webhooks        Webhook[]
+  TimestampConfig TimestampConfig?
 }
 
 model Webhook {
   id        String @id @db.VarChar(20)
   token     String @db.VarChar(68)
-  username  String @db.VarChar(32)
-  avatarURL String @db.VarChar(256)
-
   guildId   String @db.VarChar(20)
   channelId String @db.VarChar(20)
 
-  Guild       Guild        @relation(fields: [guildId], references: [id])
-  TimeConfig  TimeConfig?
-  RecurConfig RecurConfig?
-  EventConfig EventConfig?
+  Guild           Guild             @relation(fields: [guildId], references: [id])
+  TimestampConfig TimestampConfig?
 }
 
-model TimeConfig {
-  id        String @id @default(uuid()) @db.Uuid
-  guildId   String @db.VarChar(20)
-  webhookId String @unique @db.VarChar(20)
-  messageId String? @db.VarChar(20) 
+model TimestampConfig {
+  id          String   @id @default(uuid()) @db.Uuid
+  guildId     String   @unique @db.VarChar(20)
+  webhookId   String?  @unique @db.VarChar(20)
+  messageId   String?  @db.VarChar(20)
+  templateIds String[] @db.Uuid
 
-  template String
-  format   Json
-
-  Guild   Guild   @relation(fields: [guildId], references: [id])
-  Webhook Webhook @relation(fields: [webhookId], references: [id])
+  Guild     Guild      @relation(fields: [guildId], references: [id])
+  Webhook   Webhook?    @relation(fields: [webhookId], references: [id])
+  Templates Template[]
 }
 
-model RecurConfig {
-  id        String @id @default(uuid()) @db.Uuid
-  key       String
-  guildId   String @db.VarChar(20)
-  webhookId String @unique @db.VarChar(20)
+model Template {
+  id        String          @id @default(uuid()) @db.Uuid
+  recordKey String
+  configId  String          @db.Uuid
+  template  String
+  config    TimestampConfig @relation(fields: [configId], references: [id])
 
-  template String
-  format   Json
-
-  Guild   Guild   @relation(fields: [guildId], references: [id])
-  Webhook Webhook @relation(fields: [webhookId], references: [id])
+  @@unique([configId, recordKey])
 }
 
-model EventConfig {
-  id        String @id @default(uuid()) @db.Uuid
-  key       String
-  guildId   String @db.VarChar(20)
-  webhookId String @unique @db.VarChar(20)
+model Record {
+  key  String @id
+  name String @unique
+  type RecordType
 
-  template String
-  format   Json
+  start DateTime?
+  end DateTime?
+  
+  interval Int?
+  offset Int?
+  duration Int?
+  collectibleAfter Int?
+  
+  data Json?
+}
 
-  Guild   Guild   @relation(fields: [guildId], references: [id])
-  Webhook Webhook @relation(fields: [webhookId], references: [id])
+enum RecordType {
+  Recur
+  Event
 }
