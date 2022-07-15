@@ -1,14 +1,16 @@
+import { APIMessage, APIWebhook, Routes } from 'discord-api-types/v10';
+import { MessageButtonStyles, MessageComponentTypes } from 'discord.js/typings/enums';
 import {
-  SlashCommand,
-  SlashCreator,
+  ChannelType,
   CommandContext,
   CommandOptionType,
-  ChannelType,
-  ComponentType,
-  TextInputStyle,
+  ComponentContext,
+  SlashCommand,
+  SlashCreator,
 } from 'slash-create';
-import { prisma } from '../lib/prisma';
-
+import { DiscordRest } from '../lib/discordRest';
+import prisma from '../lib/prisma';
+import redis from '../lib/redis';
 export class ConfigCommand extends SlashCommand {
   constructor(creator: SlashCreator) {
     super(creator, {
@@ -19,40 +21,44 @@ export class ConfigCommand extends SlashCommand {
         {
           type: CommandOptionType.SUB_COMMAND_GROUP,
           name: 'timestamp',
-          description: 'Configure the timestamp feature',
+          description: "Configure Bot's Timestamp function",
           options: [
             {
               type: CommandOptionType.SUB_COMMAND,
-              name: 'enable',
-              description: 'Enable the timestamp feature',
-            },
-            {
-              type: CommandOptionType.SUB_COMMAND,
-              name: 'disable',
-              description: 'Enable the timestamp feature',
-            },
-            {
-              type: CommandOptionType.SUB_COMMAND,
               name: 'channel',
-              description: 'Set the channel where the timestamp will be sent',
+              description: "Configure channel for Bot's Timestamp",
               options: [
                 {
                   type: CommandOptionType.CHANNEL,
                   name: 'channel',
-                  description: 'The channel where the timestamp will be sent (default to current channel)',
-                  channel_types: [ChannelType.GUILD_TEXT, ChannelType.GUILD_NEWS],
+                  required: true,
+                  description: 'Channel where the timestamp will be sent',
+                  channel_types: [ChannelType.GUILD_TEXT],
                 },
               ],
             },
             {
               type: CommandOptionType.SUB_COMMAND,
               name: 'template',
-              description: 'Set the template of the timestamp',
-            },
-            {
-              type: CommandOptionType.SUB_COMMAND,
-              name: 'format',
-              description: 'Set the format of the timestamp',
+              description: "Configure message template for Bot's Timestamp",
+              options: [
+                {
+                  type: CommandOptionType.STRING,
+                  name: 'key',
+                  required: true,
+                  description: 'timestamp-key',
+                  choices: [
+                    {
+                      name: 'Main Game Timestamp',
+                      value: 'main',
+                    },
+                    {
+                      name: 'Recurring Sanctuary Geyser Wax',
+                      value: 'recur-sanc-geyser',
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },
@@ -61,45 +67,342 @@ export class ConfigCommand extends SlashCommand {
   }
 
   async run(ctx: CommandContext) {
-    ctx.defer();
-    const guildId = ctx.guildID;
-    if (!guildId) {
-      return ctx.editOriginal('This command can only be used in a server');
+    await ctx.defer();
+    const {
+      subcommands: [feature, prop],
+      options,
+      guildID: guildId,
+      channelID: channelId,
+      user: { id: authorId, username },
+    } = ctx;
+    if (guildId == undefined) {
+      return ctx.send('This command can only be used in a server');
     }
-    const guild = await prisma.guild.findFirst({ where: { id: guildId } });
-    if (!guild) {
-      return ctx.editOriginal('This server has not been initialized yet\nUse `/init` to initialize it');
+    const guild = await prisma.guild.findUnique({ where: { id: guildId } });
+    const args = options[feature][prop];
+
+    if (guild == undefined) {
+      return ctx.send(`The guild ${guildId} does not exist`);
     }
 
-    prisma.guild.findFirst({ where: { id: guildId } });
-
-    const { subcommands, options, channelID: channelId } = ctx;
-    console.log();
-
-    ctx.editOriginal({
-      content: '```json\n' + JSON.stringify({ subcommands, options }, null, 2) + '\n```',
-    });
-
-    const [sc_group, sc] = subcommands;
-
-    if (sc === 'template') {
-      ctx.sendModal({
-        title: 'Timestamp Template',
-        components: [
-          {
-            type: ComponentType.ACTION_ROW,
-            components: [
-              {
-                type: ComponentType.TEXT_INPUT,
-                label: 'Template',
-                custom_id: 'template',
-                style: TextInputStyle.PARAGRAPH,
-                required: true,
+    if (feature == 'timestamp') {
+      const timestampConfig =
+        (await prisma.timestampConfig.findUnique({
+          where: { guildId: guildId },
+        })) ??
+        (await prisma.timestampConfig.create({
+          data: {
+            Guild: {
+              connect: {
+                id: guildId,
               },
-            ],
+            },
           },
-        ],
-      });
+        }));
+
+      if (prop === 'channel') {
+        const selChannelID = args.channel as string;
+        const reason = `@${username} changed the timestamp channel`;
+        const existingWebhook =
+          (timestampConfig.webhookId &&
+            (await prisma.webhook.findUnique({ where: { id: timestampConfig.webhookId } }))) ||
+          null;
+
+        if (existingWebhook && existingWebhook.channelId === selChannelID) {
+          return ctx.send('This channel is already set as timestamp channel, nothing has been changed');
+        }
+
+        if (existingWebhook) {
+          await Promise.all([
+            DiscordRest.delete(Routes.webhook(existingWebhook.id), { reason }),
+            prisma.webhook.delete({
+              where: { id: existingWebhook.id },
+            }),
+          ]);
+        }
+
+        const { id: webhookID, token: webhookToken } = (await DiscordRest.post(Routes.channelWebhooks(selChannelID), {
+          reason,
+          body: { name: 'Timestampy' },
+        })) as Required<APIWebhook>;
+
+        await prisma.webhook.create({
+          data: {
+            id: webhookID,
+            token: webhookToken,
+            channelId: selChannelID,
+            Guild: {
+              connect: {
+                id: guildId,
+              },
+            },
+            TimestampConfig: {
+              connect: {
+                guildId: guildId,
+              },
+            },
+          },
+        });
+
+        return ctx.send('Timestamp channel updated');
+      } else if (prop === 'template') {
+        const configId = timestampConfig.id;
+        const recordKey = args.key;
+
+        const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
+        const existingPr = redis.get(cacheKey);
+        const template = await prisma.template.findFirst({
+          where: {
+            config: {
+              Guild: {
+                id: guildId,
+              },
+            },
+            recordKey,
+          },
+        });
+
+        const prevTmpl = template?.template ?? '';
+        const cacheValue: EditorCacheData = {
+          guildId,
+          channelId,
+          authorId,
+          configId,
+          recordKey,
+          prevTmpl,
+          newTmpl: '',
+        };
+
+        console.log(cacheValue);
+
+        if (await existingPr) {
+          return ctx.send(`You are already editing a template`);
+        }
+
+        await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
+        await ctx.send({
+          content: `Please reply to this message with the new template for ${recordKey}`,
+        });
+      }
     }
+
+    // await ctx.send(
+    //   '```json\n' + JSON.stringify({ feature, config, args, guildID, channelID, userID }, null, 2) + '\n```',
+    // );
+
+    // ctx.sendModal(
+    //   {
+    //     title: 'Timestamp Template',
+    //     components: [
+    //       {
+    //         type: ComponentType.ACTION_ROW,
+    //         components: [
+    //           {
+    //             type: ComponentType.TEXT_INPUT,
+    //             label: 'Template',
+    //             custom_id: 'template',
+    //             style: TextInputStyle.PARAGRAPH,
+    //             required: true,
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   },
+    //   ctx2 => {},
+    // );
+    // ctx.defer();
+    // const guildId = ctx.guildID;
+    // if (!guildId) {
+    //   return ctx.editOriginal('This command can only be used in a server');
+    // }
+    // const guild = await prisma.guild.findFirst({ where: { id: guildId } });
+    // if (!guild) {
+    //   return ctx.editOriginal('This server has not been initialized yet\nUse `/init` to initialize it');
+    // }
+    // prisma.guild.findFirst({ where: { id: guildId } });
+    // const { subcommands, options, channelID: channelId } = ctx;
+    // console.log();
+    // // ctx.editOriginal({
+    // //   content: '```json\n' + JSON.stringify({ subcommands, options }, null, 2) + '\n```',
+    // // });
+    // const [sc_group, sc] = subcommands;
+    // if (sc === 'template') {
+    // }
   }
 }
+
+interface EditorArgs {
+  guildId: string;
+  channelId: string;
+  messageId: string;
+  authorId: string;
+  content: string;
+}
+
+interface EditorCacheData {
+  guildId: string;
+  channelId: string;
+  authorId: string;
+  configId: string;
+  recordKey: string;
+  prevTmpl: string;
+  newTmpl: string;
+  authorMessageId?: string;
+  botMessageId?: string;
+}
+
+export async function templateEditorRun({ guildId, channelId, authorId, messageId, content }: EditorArgs) {
+  const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
+  const cacheValue = await redis.get(cacheKey);
+  if (!cacheValue) {
+    return false;
+  }
+
+  const data = JSON.parse(cacheValue) as EditorCacheData;
+  data.newTmpl = content;
+  const replyBody = {
+    content,
+    components: [
+      {
+        type: MessageComponentTypes.ACTION_ROW,
+        components: [
+          {
+            type: MessageComponentTypes.BUTTON,
+            style: MessageButtonStyles.PRIMARY,
+            custom_id: 'template-save',
+            label: 'Save',
+            emoji: {
+              id: null,
+              name: '💾',
+              animated: false,
+            },
+          },
+          {
+            type: MessageComponentTypes.BUTTON,
+            style: MessageButtonStyles.DANGER,
+            custom_id: 'template-discard',
+            label: 'Discard',
+            emoji: {
+              id: null,
+              name: '🚫',
+              animated: false,
+            },
+          },
+        ],
+      },
+    ],
+    message_reference: {
+      message_id: messageId,
+      guild_id: guildId,
+      fail_if_not_exists: false,
+    },
+  };
+
+  if (!data.botMessageId || messageId !== data.authorMessageId) {
+    if (data.botMessageId) {
+      DiscordRest.delete(Routes.channelMessage(channelId, data.botMessageId));
+    }
+
+    const reply = (await DiscordRest.post(Routes.channelMessages(channelId), {
+      body: replyBody,
+    })) as APIMessage;
+
+    data.botMessageId = reply.id;
+    data.authorMessageId = messageId;
+  } else {
+    (await DiscordRest.patch(Routes.channelMessage(channelId, data.botMessageId), {
+      body: replyBody,
+    })) as APIMessage;
+  }
+  await redis.setEx(cacheKey, 900, JSON.stringify(data));
+  return true;
+}
+
+export async function templateEditorSave(ctx: ComponentContext) {
+  const {
+    guildID: guildId,
+    channelID: channelId,
+    user: { id: authorId },
+  } = ctx;
+  const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
+  const cacheValue = await redis.get(cacheKey);
+  if (!cacheValue) {
+    return ctx.send('You are not editing a template');
+  }
+
+  const data = JSON.parse(cacheValue) as EditorCacheData;
+  await prisma.template.upsert({
+    create: {
+      template: data.newTmpl,
+      recordKey: data.recordKey,
+      config: {
+        connect: {
+          id: data.configId,
+        },
+      },
+    },
+    update: {
+      template: data.newTmpl,
+    },
+    where: {
+      configId_recordKey: {
+        configId: data.configId,
+        recordKey: data.recordKey,
+      },
+    },
+  });
+
+  await redis.del(cacheKey);
+  if (data.botMessageId) {
+    DiscordRest.delete(Routes.channelMessage(channelId, data.botMessageId));
+  }
+
+  return ctx.send(`Template saved`);
+}
+
+export async function templateEditorDiscard(ctx: ComponentContext) {
+  const {
+    guildID: guildId,
+    channelID: channelId,
+    user: { id: authorId },
+  } = ctx;
+  const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
+  const cacheValue = await redis.get(cacheKey);
+  if (!cacheValue) {
+    return ctx.send('You are not editing a template');
+  }
+
+  const data = JSON.parse(cacheValue) as EditorCacheData;
+  await redis.del(cacheKey);
+  if (data.botMessageId) {
+    DiscordRest.delete(Routes.channelMessage(channelId, data.botMessageId));
+  }
+  return ctx.send(`Template discarded`);
+}
+
+/* 
+const features = ['main', 'recur', 'event'];
+const configsOption: Record<string, ApplicationCommandOption[] | undefined> = {
+  template: undefined,
+  channel: [
+    {
+      type: CommandOptionType.CHANNEL,
+      name: 'channel',
+      description: 'The channel where the timestamp will be sent (default to current channel)',
+      channel_types: [ChannelType.GUILD_TEXT, ChannelType.GUILD_NEWS],
+    },
+  ],
+};
+
+const options = features.map(feature => ({
+  type: CommandOptionType.SUB_COMMAND_GROUP,
+  name: feature,
+  description: `Configure the ${feature} timestamp feature`,
+  options: Object.entries(configsOption).map(([config, options]) => ({
+    type: CommandOptionType.SUB_COMMAND,
+    name: config,
+    description: `Set the ${config} for ${feature} timestamp`,
+    options,
+  })),
+})),
+ */
