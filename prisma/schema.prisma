@@ -30,8 +30,17 @@ model Webhook {
   guildId   String @db.VarChar(20)
   channelId String @db.VarChar(20)
 
-  Guild           Guild             @relation(fields: [guildId], references: [id])
+  Guild           Guild            @relation(fields: [guildId], references: [id])
   TimestampConfig TimestampConfig?
+  Message         Message[]
+}
+
+model Message {
+  id        String @id @db.VarChar(20)
+  webhookId String @db.VarChar(20)
+  usedFor   String
+
+  Webhook Webhook @relation(fields: [webhookId], references: [id])
 }
 
 model TimestampConfig {
@@ -42,7 +51,7 @@ model TimestampConfig {
   templateIds String[] @db.Uuid
 
   Guild     Guild      @relation(fields: [guildId], references: [id])
-  Webhook   Webhook?    @relation(fields: [webhookId], references: [id])
+  Webhook   Webhook?   @relation(fields: [webhookId], references: [id])
   Templates Template[]
 }
 
@@ -57,18 +66,18 @@ model Template {
 }
 
 model Record {
-  key  String @id
-  name String @unique
+  key  String     @id
+  name String     @unique
   type RecordType
 
   start DateTime?
-  end DateTime?
-  
-  interval Int?
-  offset Int?
-  duration Int?
+  end   DateTime?
+
+  interval         Int?
+  offset           Int?
+  duration         Int?
   collectibleAfter Int?
-  
+
   data Json?
 }
 
