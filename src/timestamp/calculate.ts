@@ -83,11 +83,11 @@ export function calRecur(date: Date, record: Record) {
   if (interval === null || offset === null || duration === null) {
     throw new Error('Invalid recur record');
   }
-  const start = addMinutes(dayStart, offset);
-  const count = Math.floor((24 * 60) / interval) + 1;
-  const occurrences = Array.from({ length: count }, (_, i) => addMinutes(start, i * interval));
+  const occurrences = Array.from({ length: Math.floor((24 * 60) / interval) + 1 }, (_, i) =>
+    addMinutes(dayStart, i * interval + offset),
+  );
   const nextIndex = occurrences.findIndex(o => isAfter(o, date));
-  const next = nextIndex === -1 ? null : occurrences[nextIndex];
+  const next = occurrences[nextIndex];
   const previous = nextIndex < 1 ? null : occurrences[nextIndex - 1];
   const prevNotEnded = previous && isBefore(date, addMinutes(previous, duration));
   const prevColAvail = !collectibleAfter || (prevNotEnded && isAfter(date, addMinutes(previous, collectibleAfter)));
@@ -98,7 +98,7 @@ export function calRecur(date: Date, record: Record) {
     occurrences: occurrences.filter(o => isSameDay(o, date)),
     next,
     ongoingUntil,
-    collectable: prevColAvail && prevNotEnded,
+    collectable: (prevColAvail && prevNotEnded) ?? false,
   };
 }
 
