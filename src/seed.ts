@@ -41,7 +41,7 @@ const seedRecords = async () => {
         key: 'recur_shards_shattering',
         type: RecordType.Recur,
         interval: 120,
-        offset: 80,
+        offset: 58,
         duration: 50,
         collectibleAfter: 10,
       },
