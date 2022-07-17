@@ -79,7 +79,7 @@ export interface RecurData {
 
 export function calRecur(date: Date, record: Record) {
   const dayStart = startOfDay(date);
-  const { type, interval, offset, duration, collectibleAfter } = record;
+  const { type, interval, offset, duration, collectibleAfter, key: recordKey } = record;
   if (interval === null || offset === null || duration === null) {
     throw new Error('Invalid recur record');
   }
@@ -95,6 +95,7 @@ export function calRecur(date: Date, record: Record) {
 
   return {
     type,
+    recordKey,
     occurrences: occurrences.filter(o => isSameDay(o, date)),
     next,
     ongoingUntil,

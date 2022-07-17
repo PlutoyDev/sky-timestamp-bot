@@ -39,6 +39,7 @@ export function renderMain(data: MainData, { recordKey, template }: Template) {
 }
 
 export type RecurData = {
+  recordKey: string;
   occurrences: number[];
   next: number;
   ongoingUntil?: number;
