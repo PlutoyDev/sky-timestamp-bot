@@ -1,17 +1,23 @@
 import { APIMessage, APIWebhook, Routes } from 'discord-api-types/v10';
 import { MessageButtonStyles, MessageComponentTypes } from 'discord.js/typings/enums';
 import {
+  AutocompleteContext,
+  ButtonStyle,
   ChannelType,
   CommandContext,
   CommandOptionType,
   ComponentContext,
+  ComponentType,
   SlashCommand,
   SlashCreator,
 } from 'slash-create';
+import { RecordType } from '../../prisma/build';
 import { DiscordRest } from '../lib/discordRest';
 import prisma from '../lib/prisma';
 import redis from '../lib/redis';
 export class ConfigCommand extends SlashCommand {
+  recordsOptions: { name: string; value: string }[] = [];
+
   constructor(creator: SlashCreator) {
     super(creator, {
       name: 'config',
@@ -47,16 +53,18 @@ export class ConfigCommand extends SlashCommand {
                   name: 'key',
                   required: true,
                   description: 'timestamp-key',
-                  choices: [
-                    {
-                      name: 'Main Game Timestamp',
-                      value: 'main',
-                    },
-                    {
-                      name: 'Recurring Sanctuary Geyser Wax',
-                      value: 'recur-sanc-geyser',
-                    },
-                  ],
+                  autocomplete: true,
+                  //TODO: Add Autocomplete
+                  // choices: [
+                  //   {
+                  //     name: 'Main Game Timestamp',
+                  //     value: 'main',
+                  //   },
+                  //   {
+                  //     name: 'Recurring Sanctuary Geyser Wax',
+                  //     value: 'recur-sanc-geyser',
+                  //   },
+                  // ],
                 },
               ],
             },
@@ -64,6 +72,43 @@ export class ConfigCommand extends SlashCommand {
         },
       ],
     });
+    prisma.record
+      .findMany({
+        where: {
+          OR: [
+            {
+              type: {
+                equals: RecordType.Recur,
+              },
+            },
+            {
+              start: {
+                gte: new Date(),
+              },
+              end: {
+                gte: new Date(),
+              },
+            },
+          ],
+        },
+      })
+      .then(records => {
+        this.recordsOptions = records.map(({ key, name }) => ({
+          name,
+          value: key,
+        }));
+      });
+  }
+
+  async autocomplete(ctx: AutocompleteContext): Promise<any> {
+    console.log(ctx.options);
+    if (ctx.options.timestamp.template.key === '') {
+      return [{ name: 'Main', value: 'main' }, ...this.recordsOptions];
+    } else {
+      return [{ name: 'Main', value: 'main' }, ...this.recordsOptions].filter(({ name }) =>
+        name.toLowerCase().includes(ctx.options.timestamp.template.key.toLowerCase()),
+      );
+    }
   }
 
   async run(ctx: CommandContext) {
@@ -113,12 +158,17 @@ export class ConfigCommand extends SlashCommand {
         }
 
         if (existingWebhook) {
+          console.log('deleting existing webhook');
+
           await Promise.all([
             DiscordRest.delete(Routes.webhook(existingWebhook.id), { reason }),
-            prisma.webhook.delete({
-              where: { id: existingWebhook.id },
-            }),
+            prisma.message
+              .deleteMany({ where: { webhookId: existingWebhook.id } })
+              .then(() => prisma.webhook.delete({ where: { id: existingWebhook.id } }))
+              .catch(console.error),
           ]);
+
+          console.log('deleted existing webhook');
         }
 
         const { id: webhookID, token: webhookToken } = (await DiscordRest.post(Routes.channelWebhooks(selChannelID), {
@@ -181,7 +231,29 @@ export class ConfigCommand extends SlashCommand {
 
         await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
         await ctx.send({
-          content: `Please reply to this message with the new template for ${recordKey}`,
+          content: `Please send a new template for ${recordKey}
+Afterwards press the up arrow to edit and refine the new template
+Your current template is
+\`\`\`
+${prevTmpl}
+\`\`\``,
+          components: [
+            {
+              type: ComponentType.ACTION_ROW,
+              components: [
+                {
+                  type: ComponentType.BUTTON,
+                  style: ButtonStyle.DESTRUCTIVE,
+                  custom_id: 'template-discard',
+                  label: 'Cancel',
+                  emoji: {
+                    name: '🚫',
+                    animated: false,
+                  },
+                },
+              ],
+            },
+          ],
         });
       }
     }
@@ -260,6 +332,10 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
 
   const data = JSON.parse(cacheValue) as EditorCacheData;
   data.newTmpl = content;
+
+  //TODO: render content
+  //content = render?(content);
+
   const replyBody = {
     content,
     components: [
