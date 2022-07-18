@@ -340,25 +340,31 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   //content = render?(content);
   
   const keys = await redis.keys(`timestamp_${data.recordKey}_*`);
-  console.log(keys);
+  const props = await Promise.all(keys.map(async key => {
+    const val = await redis.get(key);
+    if (val.includes(',')) return val.split(',').map(parseInt);
+    else return parseInt(val);
+  }))
 
-  // content = content.replace(propPattern, (full, prop, format, a2, a3) => {
-  //   if (data[prop] === undefined) {
-  //     throw new Error(`Unknown property: ${prop}`);
-  //   }
 
-  //   const value = data[prop];
+  const propPattern = /\$\(\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\)/g;
+  content = content.replace(propPattern, (full, prop_name, format, a2, a3) => {
+    if (props[prop_name] === undefined) {
+      throw new Error(`Unknown property: ${prop_name}`);
+    }
 
-  //   if (value instanceof Array) {
-  //     if (typeof value[0] === 'number') {
-  //       return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
-  //     }
-  //   } else if (typeof value === 'number' || value === null) {
-  //     return timeFormatter(value, format);
-  //   }
+    const value = props[prop_name];
 
-  //   return '';
-  // });
+    if (value instanceof Array) {
+      if (typeof value[0] === 'number') {
+        return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
+      }
+    } else if (typeof value === 'number' || value === null) {
+      return timeFormatter(value, format);
+    }
+
+    return '';
+  });
 
   const replyBody = {
     content,
