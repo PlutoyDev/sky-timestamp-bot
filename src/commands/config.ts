@@ -340,11 +340,12 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   //content = render?(content);
   
   const keys = await redis.keys(`timestamp_${data.recordKey}_*`);
-  const props = await Promise.all(keys.map(async key => {
+  const props = Object.fromEntries(await Promise.all(keys.map(async key => {
     const val = await redis.get(key);
-    if (val.includes(',')) return val.split(',').map(parseInt);
-    else return parseInt(val);
-  }))
+    if(val === null) return;
+    if (val.includes(',')) return [key, val.split(',').map(parseInt)];
+    else return [key, parseInt(val)];
+  })))
 
 
   const propPattern = /\$\(\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\)/g;
