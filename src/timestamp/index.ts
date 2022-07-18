@@ -4,6 +4,7 @@ import { Routes } from 'discord-api-types/v10';
 import { Message, RecordType, Webhook } from '../../prisma/build';
 import { DiscordRest } from '../lib/discordRest';
 import prisma from '../lib/prisma';
+import redis from '../lib/redis';
 import { calDailyReset, calEdenReset, calRecur, calTravelingSpirit, skyToUtc } from './calculate';
 import { MainData, RecurData, renderMain, renderRecur } from './template';
 
@@ -48,7 +49,7 @@ const isPartial = process.argv.includes('partial');
     Object.entries(cacheObj).map(async ([f_grp, propVal]) =>
       Object.entries(propVal).map(([prop, val]) => {
         const key = `timestamp_${f_grp}_${prop}`;
-        if(value instanceof Array) {
+        if(val instanceof Array) {
           redis.del(key)
           redis.rpush(key, ...val);
         } else {
