@@ -50,8 +50,7 @@ const isPartial = process.argv.includes('partial');
       Object.entries(propVal).map(([prop, val]) => {
         const key = `timestamp_${f_grp}_${prop}`;
         if(val instanceof Array) {
-          redis.del(key) 
-          redis.rPush(null, key, ...val);
+          redis.set(key, val.join(','))
         } else {
           redis.set(key, val)
         }
