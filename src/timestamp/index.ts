@@ -46,9 +46,15 @@ const isPartial = process.argv.includes('partial');
 
   Promise.all([
     Object.entries(cacheObj).map(async ([f_grp, propVal]) =>
-      Object.entries(propVal).map(([prop, val]) =>
-        console.log(`timestamp_${f_grp}_${prop}`, val)
-      )
+      Object.entries(propVal).map(([prop, val]) => {
+        const key = `timestamp_${f_grp}_${prop}`;
+        if(value instanceof Array) {
+          redis.del(key)
+          redis.rpush(key, ...val);
+        } else {
+          redis.set(key, val)
+        }
+      })
     ),
   ]);
 
