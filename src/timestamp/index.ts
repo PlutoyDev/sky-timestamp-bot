@@ -38,16 +38,16 @@ const isPartial = process.argv.includes('partial');
     main_daily_reset: dailyReset,
     main_eden_reset: edenReset,
     main_traveling_spirit: ts,
-    ...recurData.reduce((obj, { recordKey, occurrences, next }) => {
+    ...recurData.reduce((obj, { recordKey, occurrences, next, ongoingUntil }) => {
       obj[recordKey] = { occurrences, next, ongoingUntil };
       return obj;
-    }, {} as Record<string, number>),
+    }, {} as Record<string, Record<string, number>>),
   };
 
   Promise.all([
     Object.entries(cacheObj).map(async ([f_grp, propVal]) =>
       Object.entries(propVal).map(([prop, val]) =>
-        console.log(`timestamp_${f_group}_${prop}`, val)
+        console.log(`timestamp_${f_grp}_${prop}`, val)
       )
     ),
   ]);
