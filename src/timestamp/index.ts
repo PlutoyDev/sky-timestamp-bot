@@ -51,7 +51,7 @@ const isPartial = process.argv.includes('partial');
         const key = `timestamp_${f_grp}_${prop}`;
         if(val instanceof Array) {
           redis.del(key)
-          redis.rpush(key, ...val);
+          redis.rPush(key, ...val);
         } else {
           redis.set(key, val)
         }
