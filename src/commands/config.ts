@@ -342,23 +342,23 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   const keys = await redis.keys(`timestamp_${cacheValue.recordKey}_*`);
   console.log(keys);
 
-  content = content.replace(propPattern, (full, prop, format, a2, a3) => {
-    if (data[prop] === undefined) {
-      throw new Error(`Unknown property: ${prop}`);
-    }
+  // content = content.replace(propPattern, (full, prop, format, a2, a3) => {
+  //   if (data[prop] === undefined) {
+  //     throw new Error(`Unknown property: ${prop}`);
+  //   }
 
-    const value = data[prop];
+  //   const value = data[prop];
 
-    if (value instanceof Array) {
-      if (typeof value[0] === 'number') {
-        return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
-      }
-    } else if (typeof value === 'number' || value === null) {
-      return timeFormatter(value, format);
-    }
+  //   if (value instanceof Array) {
+  //     if (typeof value[0] === 'number') {
+  //       return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
+  //     }
+  //   } else if (typeof value === 'number' || value === null) {
+  //     return timeFormatter(value, format);
+  //   }
 
-    return '';
-  });
+  //   return '';
+  // });
 
   const replyBody = {
     content,
