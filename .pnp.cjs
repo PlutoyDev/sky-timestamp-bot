@@ -37,6 +37,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@discordjs/rest", "npm:0.5.0"],\
             ["@prisma/client", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:4.0.0"],\
             ["@types/express", "npm:4.17.13"],\
+            ["@types/node-cron", "npm:3.0.2"],\
+            ["@types/uuid", "npm:8.3.4"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.11"],\
             ["date-fns", "npm:2.28.0"],\
             ["date-fns-tz", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:1.3.5"],\
@@ -45,6 +47,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
+            ["node-cron", "npm:3.0.1"],\
             ["prettier", "npm:2.7.1"],\
             ["prisma", "npm:4.0.0"],\
             ["prisma-dbml-generator", "npm:0.9.1"],\
@@ -53,7 +56,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ts-node", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:10.8.1"],\
             ["tslib", "npm:2.4.0"],\
             ["tweetnacl", "npm:1.0.3"],\
-            ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"]\
+            ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"],\
+            ["uuid", "npm:8.3.2"]\
           ],\
           "linkType": "SOFT"\
         }]\
@@ -826,6 +830,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["@types/node-cron", [\
+        ["npm:3.0.2", {\
+          "packageLocation": "./.yarn/cache/@types-node-cron-npm-3.0.2-fd3c8a5296-921b1276c7.zip/node_modules/@types/node-cron/",\
+          "packageDependencies": [\
+            ["@types/node-cron", "npm:3.0.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["@types/node-fetch", [\
         ["npm:2.6.2", {\
           "packageLocation": "./.yarn/cache/@types-node-fetch-npm-2.6.2-f96c00879e-6f73b14700.zip/node_modules/@types/node-fetch/",\
@@ -908,6 +921,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-treeify-npm-1.0.0-b5e04e9cd3-1b2397030d.zip/node_modules/@types/treeify/",\
           "packageDependencies": [\
             ["@types/treeify", "npm:1.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@types/uuid", [\
+        ["npm:8.3.4", {\
+          "packageLocation": "./.yarn/cache/@types-uuid-npm-8.3.4-7547f4402c-6f11f3ff70.zip/node_modules/@types/uuid/",\
+          "packageDependencies": [\
+            ["@types/uuid", "npm:8.3.4"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -3468,6 +3490,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["node-cron", [\
+        ["npm:3.0.1", {\
+          "packageLocation": "./.yarn/cache/node-cron-npm-3.0.1-7bb2b150b6-98636a3d43.zip/node_modules/node-cron/",\
+          "packageDependencies": [\
+            ["node-cron", "npm:3.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["node-fetch", [\
         ["npm:2.6.7", {\
           "packageLocation": "./.yarn/cache/node-fetch-npm-2.6.7-777aa2a6df-8d816ffd1e.zip/node_modules/node-fetch/",\
@@ -4271,6 +4302,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@discordjs/rest", "npm:0.5.0"],\
             ["@prisma/client", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:4.0.0"],\
             ["@types/express", "npm:4.17.13"],\
+            ["@types/node-cron", "npm:3.0.2"],\
+            ["@types/uuid", "npm:8.3.4"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.11"],\
             ["date-fns", "npm:2.28.0"],\
             ["date-fns-tz", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:1.3.5"],\
@@ -4279,6 +4312,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["dotenv", "npm:16.0.1"],\
             ["eslint", "npm:8.18.0"],\
             ["express", "npm:4.18.1"],\
+            ["node-cron", "npm:3.0.1"],\
             ["prettier", "npm:2.7.1"],\
             ["prisma", "npm:4.0.0"],\
             ["prisma-dbml-generator", "npm:0.9.1"],\
@@ -4287,7 +4321,8 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["ts-node", "virtual:c5c164ccdb892f8eb27993e5440ad5f736a20db0eca6919ee19d05cca4a778537c61ffec6641020777e4c21ebf3c7372fbd68404dcefd8af03a0da4df5ab0c70#npm:10.8.1"],\
             ["tslib", "npm:2.4.0"],\
             ["tweetnacl", "npm:1.0.3"],\
-            ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"]\
+            ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=7ad353"],\
+            ["uuid", "npm:8.3.2"]\
           ],\
           "linkType": "SOFT"\
         }]\
