@@ -354,7 +354,7 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
       return `!${full}!`
     }
 
-    const value = props[prop_name];
+    const value = props[`timestamp_${data.recordKey}_${prop_name}`];
 
     if (value instanceof Array) {
       if (typeof value[0] === 'number') {
