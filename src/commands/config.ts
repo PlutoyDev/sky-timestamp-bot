@@ -338,10 +338,10 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
 
   //TODO: render content
   //content = render?(content);
-  
   const keys = await redis.keys(`timestamp_${data.recordKey}_*`);
   const props = Object.fromEntries((await Promise.all(keys.map(async key => {
     const val = await redis.get(key);
+    key = 
     if(val === null) return null;
     if (val.includes(',')) return [key, val.split(',').map(parseInt)];
     else return [key, parseInt(val)];
@@ -350,8 +350,9 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
 
   const propPattern = /\$\(\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\)/g;
   content = content.replace(propPattern, (full, prop_name, format, a2, a3) => {
-    if (props[prop_name] === undefined) {
-      throw new Error(`Unknown property: ${prop_name}`);
+    if (props[`timestamp_${data.recordKey}_${prop_name}`] === undefined) {
+      console.log(`Unknown property: ${prop_name}`);
+      return `!${full}!`
     }
 
     const value = props[prop_name];
