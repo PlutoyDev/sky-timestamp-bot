@@ -56,7 +56,7 @@ export function renderRecur(data: RecurData, { recordKey, template }: Template) 
 
 const discordFormat = 'tTdDfFR'.split('');
 
-function timeFormatter(dt: number | null, format: string) {
+export function timeFormatter(dt: number | null, format: string) {
   if (!dt) return '';
   if (!format || format.length === 0 || format === '%') {
     return `<t:${dt}>`;
