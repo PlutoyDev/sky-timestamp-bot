@@ -41,7 +41,7 @@ const isPartial = process.argv.includes('partial');
     ...recurData.reduce((obj, { recordKey, occurrences, next, ongoingUntil }) => {
       obj[recordKey] = { occurrences, next, ongoingUntil };
       return obj;
-    }, {} as Record<string, Record<string, number>>),
+    }, {} as Record<string, Record<string, any>>),
   };
 
   Promise.all([
