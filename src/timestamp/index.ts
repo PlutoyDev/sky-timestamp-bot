@@ -33,6 +33,26 @@ const isPartial = process.argv.includes('partial');
   const ts = allDateToUnix(calTravelingSpirit(date));
   const recurData = recurRecords.map(record => allDateToUnix(calRecur(date, record))) as RecurData[];
 
+  //Caching
+  const cacheObj = {
+    main_daily_reset: dailyReset,
+    main_eden_reset: edenReset,
+    main_traveling_spirit: ts,
+    ...recurData.reduce((obj, { recordKey, occurrences, next }) => {
+      obj[recordKey] = { occurrences, next, ongoingUntil };
+      return obj;
+    }, {} as Record<string, number>),
+  };
+
+  Promise.all([
+    Object.entries(cacheObj).map(async ([f_grp, propVal]) =>
+      Object.entries(propVal).map(([prop, val]) =>
+        console.log(`timestamp_${f_group}_${prop}`, val)
+      )
+    ),
+  ]);
+
+  //Excute all webhook
   config.forEach(async c => {
     const { Templates, Webhook } = c;
 
@@ -85,10 +105,10 @@ async function sendUpdateMessage(name: string, content: string, webhook: Webhook
   if (Message) {
     try {
       await DiscordRest.patch(Routes.webhookMessage(webhook.id, webhook.token, Message.id), {
-        auth: false,
-        body: {
-          content,
-        },
+          auth: false,
+          body: {
+            content,
+          },
       });
     } catch (e) {
       console.log(`Discord message deleted`);
@@ -97,13 +117,13 @@ async function sendUpdateMessage(name: string, content: string, webhook: Webhook
     }
   } else {
     const { id: MessageId } = (await DiscordRest.post(Routes.webhook(webhook.id, webhook.token), {
-      auth: false,
-      query: new URLSearchParams({
+        auth: false,
+        query: new URLSearchParams({
         wait: 'true',
-      }),
-      body: {
-        content,
-      },
+        }),
+        body: {
+          content,
+        },
     })) as APIMessage;
 
     await prisma.message.create({
