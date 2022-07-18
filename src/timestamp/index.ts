@@ -52,7 +52,7 @@ const isPartial = process.argv.includes('partial');
         if(val instanceof Array) {
           redis.set(key, val.join(','))
         } else {
-          redis.set(key, val)
+          redis.set(key, `${val}`)
         }
       })
     ),
