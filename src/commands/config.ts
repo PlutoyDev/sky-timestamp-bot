@@ -341,7 +341,6 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   const keys = await redis.keys(`timestamp_${data.recordKey}_*`);
   const props = Object.fromEntries((await Promise.all(keys.map(async key => {
     const val = await redis.get(key);
-    key = 
     if(val === null) return null;
     if (val.includes(',')) return [key, val.split(',').map(parseInt)];
     else return [key, parseInt(val)];
