@@ -339,7 +339,7 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   //TODO: render content
   //content = render?(content);
   
-  const keys = await redis.keys(`timestamp_${cacheValue.recordKey}_*`);
+  const keys = await redis.keys(`timestamp_${data.recordKey}_*`);
   console.log(keys);
 
   // content = content.replace(propPattern, (full, prop, format, a2, a3) => {
