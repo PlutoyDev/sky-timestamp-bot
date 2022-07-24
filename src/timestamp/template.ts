@@ -71,7 +71,7 @@ function timeFormatter(dt: number | null, format: string) {
   }
 }
 
-function replacer(template: string, data: Record<string, any>) {
+export function replacer(template: string, data: Record<string, any>) {
   const now = Math.floor(Date.now() / 1000);
   return template.replace(propPattern, (full, prop, format, a2, a3) => {
     if (data[prop] === undefined && prop !== 'now') {

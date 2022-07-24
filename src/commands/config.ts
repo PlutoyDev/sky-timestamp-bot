@@ -15,6 +15,7 @@ import { RecordType } from '../../prisma/build';
 import { DiscordRest } from '../lib/discordRest';
 import prisma from '../lib/prisma';
 import redis from '../lib/redis';
+import { replacer } from '../timestamp/template';
 export class ConfigCommand extends SlashCommand {
   recordsOptions: { name: string; value: string }[] = [];
 
@@ -334,8 +335,7 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   const data = JSON.parse(cacheValue) as EditorCacheData;
   data.newTmpl = content;
 
-  //TODO: render content
-  //content = render?(content);
+  content = await renderFromCache(content, data.recordKey);
 
   const replyBody = {
     content,
@@ -395,11 +395,39 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
   return true;
 }
 
+async function renderFromCache(template: string, recordKey: string) {
+  const cacheKeyPrefix = `timestamp_${recordKey}_`;
+  const prefixLen = cacheKeyPrefix.length;
+  const cacheKeys = await redis.keys(cacheKeyPrefix + '*');
+  const cacheValues = (await Promise.all(
+    cacheKeys.map(async key => {
+      return await redis.get(key);
+    }),
+  )) as string[];
+  const cache = cacheKeys.reduce((acc, key, i) => {
+    key = key.substring(prefixLen);
+    const value = cacheValues[i];
+    if (value === 'null') {
+      return acc;
+    } else if (value.includes(',')) {
+      acc[key] = value.split(',').map(parseInt);
+    } else {
+      acc[key] = parseInt(value);
+    }
+    return acc;
+  }, {} as Record<string, any>);
+
+  console.log(cache);
+
+  return replacer(template, cache);
+}
+
 export async function templateEditorSave(ctx: ComponentContext) {
   const {
     guildID: guildId,
     channelID: channelId,
     user: { id: authorId },
+    message: { content },
   } = ctx;
   const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
   const cacheValue = await redis.get(cacheKey);
@@ -430,11 +458,8 @@ export async function templateEditorSave(ctx: ComponentContext) {
   });
 
   await redis.del(cacheKey);
-  if (data.botMessageId) {
-    DiscordRest.delete(Routes.channelMessage(channelId, data.botMessageId));
-  }
 
-  return ctx.send(`Template saved`);
+  return ctx.editParent({ content: `Template saved`, components: [] });
 }
 
 export async function templateEditorDiscard(ctx: ComponentContext) {
