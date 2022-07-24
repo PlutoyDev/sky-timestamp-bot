@@ -6,7 +6,7 @@ import { ConfigCommand, templateEditorDiscard, templateEditorRun, templateEditor
 import * as cron from 'node-cron';
 import sendTimestamp from './timestamp';
 
-cron.schedule('0 */5 * * * *', () => sendTimestamp().then(() => void console.log('Done') || process.exit(0)));
+cron.schedule('0 */5 * * * *', () => sendTimestamp().then(() => void console.log('Done')));
 
 const client = new Client({
   intents: ['GUILD_MESSAGES', 'GUILDS'],
