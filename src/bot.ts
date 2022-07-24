@@ -6,6 +6,7 @@ import { ConfigCommand, templateEditorDiscard, templateEditorRun, templateEditor
 import * as cron from 'node-cron';
 import sendTimestamp from './timestamp';
 import { DestroyCommand } from './commands/destroy';
+import { RefreshCommand } from './commands/refresh';
 
 cron.schedule('0 */5 * * * *', () =>
   sendTimestamp()
@@ -29,7 +30,7 @@ creator.on('error', console.log);
 
 creator
   .withServer(new GatewayServer(handler => client.ws.on('INTERACTION_CREATE', handler)))
-  .registerCommands([InitCommand, DestroyCommand, ConfigCommand])
+  .registerCommands([InitCommand, DestroyCommand, RefreshCommand, ConfigCommand])
   .syncCommands({ deleteCommands: true });
 
 creator.registerGlobalComponent('template-save', templateEditorSave);
