@@ -20,7 +20,7 @@ if (DiscordRest.listenerCount('rateLimited') === 0) {
     DiscordRestGlobal.DiscordRest = DiscordRest;
 
     DiscordRest.on('response', async (req, res) => {
-      console.log(`<< ${res.statusCode} ${req.route}`);
+      console.log(`${res.statusCode} ${req.method} ${req.route}`);
     });
 
     DiscordRest.on('restDebug', info => {
