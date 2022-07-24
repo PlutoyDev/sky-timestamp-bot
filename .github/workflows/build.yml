@@ -17,6 +17,7 @@ jobs:
       - name: Build
         run: yarn build
       - name: Stopping previous instances
+        continue-on-error: true
         run: pm2 stop sky-timestamp-bot
       - name: Starting new instances
         run: yarn back
