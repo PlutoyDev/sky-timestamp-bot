@@ -15,6 +15,8 @@ import { RecordType } from '../../prisma/build';
 import { DiscordRest } from '../lib/discordRest';
 import prisma from '../lib/prisma';
 import redis from '../lib/redis';
+import { timeFormatter } from '../timestamp/template'
+
 export class ConfigCommand extends SlashCommand {
   recordsOptions: { name: string; value: string }[] = [];
 
@@ -231,12 +233,7 @@ export class ConfigCommand extends SlashCommand {
 
         await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
         await ctx.send({
-          content: `Please send a new template for ${recordKey}
-Afterwards press the up arrow to edit and refine the new template
-Your current template is
-\`\`\`
-${prevTmpl}
-\`\`\``,
+          content: `Please send a new template for ${recordKey}\nAfterwards continue editing and refine the template by editing your message`,
           components: [
             {
               type: ComponentType.ACTION_ROW,
@@ -255,6 +252,12 @@ ${prevTmpl}
             },
           ],
         });
+        await ctx.sendFollowUp({
+          content: `Your current template is
+\`\`\`
+${prevTmpl}
+\`\`\``
+        })
       }
     }
 
@@ -335,6 +338,34 @@ export async function templateEditorRun({ guildId, channelId, authorId, messageI
 
   //TODO: render content
   //content = render?(content);
+  const keys = await redis.keys(`timestamp_${data.recordKey}_*`);
+  const props = Object.fromEntries((await Promise.all(keys.map(async key => {
+    const val = await redis.get(key);
+    if(val === null) return null;
+    if (val.includes(',')) return [key, val.split(',').map(parseInt)];
+    else return [key, parseInt(val)];
+  }))).filter(v => v !== null) as [string, any][]);
+
+
+  const propPattern = /\$\(\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\)/g;
+  content = content.replace(propPattern, (full, prop_name, format, a2, a3) => {
+    if (props[`timestamp_${data.recordKey}_${prop_name}`] === undefined) {
+      console.log(`Unknown property: ${prop_name}`);
+      return `!${full}!`
+    }
+
+    const value = props[`timestamp_${data.recordKey}_${prop_name}`];
+
+    if (value instanceof Array) {
+      if (typeof value[0] === 'number') {
+        return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
+      }
+    } else if (typeof value === 'number' || value === null) {
+      return timeFormatter(value, format);
+    }
+
+    return '';
+  });
 
   const replyBody = {
     content,
