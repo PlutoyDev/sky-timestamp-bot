@@ -19,15 +19,8 @@ if (DiscordRest.listenerCount('rateLimited') === 0) {
   if (NODE_ENV !== 'production') {
     DiscordRestGlobal.DiscordRest = DiscordRest;
 
-    DiscordRest.on('request', req => {
-      console.log(`>> ${req.method} ${req.route}`, req.path, req.data);
-    });
-
     DiscordRest.on('response', async (req, res) => {
       console.log(`<< ${res.statusCode} ${req.route}`);
-      if (res.statusCode >= 400) {
-        console.log(await res.body.json());
-      }
     });
 
     DiscordRest.on('restDebug', info => {
