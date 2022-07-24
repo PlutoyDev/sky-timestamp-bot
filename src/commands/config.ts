@@ -1,7 +1,6 @@
 import { APIMessage, APIWebhook, Routes } from 'discord-api-types/v10';
 import { MessageButtonStyles, MessageComponentTypes } from 'discord.js/typings/enums';
 import {
-  AutocompleteContext,
   ButtonStyle,
   ChannelType,
   CommandContext,
@@ -17,7 +16,7 @@ import prisma from '../lib/prisma';
 import redis from '../lib/redis';
 import { replacer } from '../timestamp/template';
 export class ConfigCommand extends SlashCommand {
-  recordsOptions: { name: string; value: string }[] = [];
+  recordsOptions: { label: string; value: string }[] = [];
 
   constructor(creator: SlashCreator) {
     super(creator, {
@@ -48,26 +47,6 @@ export class ConfigCommand extends SlashCommand {
               type: CommandOptionType.SUB_COMMAND,
               name: 'template',
               description: "Configure message template for Bot's Timestamp",
-              options: [
-                {
-                  type: CommandOptionType.STRING,
-                  name: 'key',
-                  required: true,
-                  description: 'timestamp-key',
-                  autocomplete: true,
-                  //TODO: Add Autocomplete
-                  // choices: [
-                  //   {
-                  //     name: 'Main Game Timestamp',
-                  //     value: 'main',
-                  //   },
-                  //   {
-                  //     name: 'Recurring Sanctuary Geyser Wax',
-                  //     value: 'recur-sanc-geyser',
-                  //   },
-                  // ],
-                },
-              ],
             },
           ],
         },
@@ -95,21 +74,11 @@ export class ConfigCommand extends SlashCommand {
       })
       .then(records => {
         this.recordsOptions = records.map(({ key, name }) => ({
-          name,
+          label: name,
           value: key,
         }));
+        this.recordsOptions.unshift({ label: 'Main', value: 'main' });
       });
-  }
-
-  async autocomplete(ctx: AutocompleteContext): Promise<any> {
-    console.log(ctx.options);
-    if (ctx.options.timestamp.template.key === '') {
-      return [{ name: 'Main', value: 'main' }, ...this.recordsOptions];
-    } else {
-      return [{ name: 'Main', value: 'main' }, ...this.recordsOptions].filter(({ name }) =>
-        name.toLowerCase().includes(ctx.options.timestamp.template.key.toLowerCase()),
-      );
-    }
   }
 
   async run(ctx: CommandContext) {
@@ -197,112 +166,175 @@ export class ConfigCommand extends SlashCommand {
 
         return ctx.send('Timestamp channel updated');
       } else if (prop === 'template') {
-        const configId = timestampConfig.id;
-        const recordKey = args.key;
-
         const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
-        const existingPr = redis.get(cacheKey);
-        const template = await prisma.template.findFirst({
-          where: {
-            Config: {
-              Guild: {
-                id: guildId,
-              },
-            },
-            recordKey,
-          },
-        });
-
-        const prevTmpl = template?.template ?? '';
-        const cacheValue: EditorCacheData = {
-          guildId,
-          channelId,
-          authorId,
-          configId,
-          recordKey,
-          prevTmpl,
-          newTmpl: '',
-        };
-
-        console.log(cacheValue);
-
-        if (await existingPr) {
+        const existing = await redis.get(cacheKey);
+        if (existing) {
           return ctx.send(`You are already editing a template`);
         }
 
-        await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
         await ctx.send({
-          content: `Please send a new template for ${recordKey}\nAfterwards continue editing and refine the template by editing your message`,
+          content: `Select which template you want to edit`,
           components: [
             {
               type: ComponentType.ACTION_ROW,
               components: [
                 {
-                  type: ComponentType.BUTTON,
-                  style: ButtonStyle.DESTRUCTIVE,
-                  custom_id: 'template-discard',
-                  label: 'Cancel',
-                  emoji: {
-                    name: '🚫',
-                    animated: false,
-                  },
+                  type: ComponentType.SELECT,
+                  custom_id: `config-timestamp-template`,
+                  options: this.recordsOptions,
                 },
               ],
             },
           ],
         });
-        await ctx.sendFollowUp({
-          content: `Your current template is
+        //         const configId = timestampConfig.id;
+        //         const recordKey = args.key;
+
+        //         const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
+        //         const existingPr = redis.get(cacheKey);
+        //         const template = await prisma.template.findFirst({
+        //           where: {
+        //             Config: {
+        //               Guild: {
+        //                 id: guildId,
+        //               },
+        //             },
+        //             recordKey,
+        //           },
+        //         });
+
+        //         const prevTmpl = template?.template ?? '';
+        //         const cacheValue: EditorCacheData = {
+        //           guildId,
+        //           channelId,
+        //           authorId,
+        //           configId,
+        //           recordKey,
+        //           prevTmpl,
+        //           newTmpl: '',
+        //         };
+
+        //         console.log(cacheValue);
+
+        //         if (await existingPr) {
+        //           return ctx.send(`You are already editing a template`);
+        //         }
+
+        //         await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
+        //         await ctx.send({
+        //           content: `Please send a new template for ${recordKey}\nAfterwards continue editing and refine the template by editing your message`,
+        //           components: [
+        //             {
+        //               type: ComponentType.ACTION_ROW,
+        //               components: [
+        //                 {
+        //                   type: ComponentType.BUTTON,
+        //                   style: ButtonStyle.DESTRUCTIVE,
+        //                   custom_id: 'template-discard',
+        //                   label: 'Cancel',
+        //                   emoji: {
+        //                     name: '🚫',
+        //                     animated: false,
+        //                   },
+        //                 },
+        //               ],
+        //             },
+        //           ],
+        //         });
+        //         await ctx.sendFollowUp({
+        //           content: `Your current template is
+        // \`\`\`
+        // ${prevTmpl}
+        // \`\`\``,
+        //         });
+      }
+    }
+  }
+}
+
+export async function templateEditorStart(cctx: ComponentContext) {
+  cctx.defer();
+  const {
+    guildID: guildId,
+    channelID: channelId,
+    user: { id: authorId },
+    values: [recordKey],
+  } = cctx;
+
+  if (!guildId) {
+    return cctx.send('This command can only be used in a server');
+  }
+
+  // const config = await prisma.timestampConfig.findUnique({
+  //   where: { guildId },
+  // })
+
+  const config = await prisma.timestampConfig.upsert({
+    where: { guildId },
+    update: {},
+    create: {
+      Guild: {
+        connect: {
+          id: guildId,
+        },
+      },
+    },
+  });
+
+  const configId = config.id;
+
+  const cacheKey = `template-${guildId}-${channelId}-${authorId}`;
+  const template = await prisma.template.findFirst({
+    where: {
+      Config: {
+        Guild: {
+          id: guildId,
+        },
+      },
+      recordKey,
+    },
+  });
+
+  const prevTmpl = template?.template ?? '';
+  const cacheValue: EditorCacheData = {
+    guildId,
+    channelId,
+    authorId,
+    configId,
+    recordKey,
+    prevTmpl,
+    newTmpl: '',
+  };
+
+  console.log(cacheValue);
+
+  await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
+  await cctx.editParent({
+    content: `Please send a new template for ${recordKey}\nAfterwards continue editing and refine the template by editing your message`,
+    components: [
+      {
+        type: ComponentType.ACTION_ROW,
+        components: [
+          {
+            type: ComponentType.BUTTON,
+            style: ButtonStyle.DESTRUCTIVE,
+            custom_id: 'template-discard',
+            label: 'Cancel',
+            emoji: {
+              name: '🚫',
+              animated: false,
+            },
+          },
+        ],
+      },
+    ],
+  });
+  await cctx.sendFollowUp({
+    content: `Your current template is
 \`\`\`
 ${prevTmpl}
 \`\`\``,
-        });
-      }
-    }
-
-    // await ctx.send(
-    //   '```json\n' + JSON.stringify({ feature, config, args, guildID, channelID, userID }, null, 2) + '\n```',
-    // );
-
-    // ctx.sendModal(
-    //   {
-    //     title: 'Timestamp Template',
-    //     components: [
-    //       {
-    //         type: ComponentType.ACTION_ROW,
-    //         components: [
-    //           {
-    //             type: ComponentType.TEXT_INPUT,
-    //             label: 'Template',
-    //             custom_id: 'template',
-    //             style: TextInputStyle.PARAGRAPH,
-    //             required: true,
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //   },
-    //   ctx2 => {},
-    // );
-    // ctx.defer();
-    // const guildId = ctx.guildID;
-    // if (!guildId) {
-    //   return ctx.editOriginal('This command can only be used in a server');
-    // }
-    // const guild = await prisma.guild.findFirst({ where: { id: guildId } });
-    // if (!guild) {
-    //   return ctx.editOriginal('This server has not been initialized yet\nUse `/init` to initialize it');
-    // }
-    // prisma.guild.findFirst({ where: { id: guildId } });
-    // const { subcommands, options, channelID: channelId } = ctx;
-    // console.log();
-    // // ctx.editOriginal({
-    // //   content: '```json\n' + JSON.stringify({ subcommands, options }, null, 2) + '\n```',
-    // // });
-    // const [sc_group, sc] = subcommands;
-    // if (sc === 'template') {
-    // }
-  }
+  });
 }
 
 interface EditorArgs {

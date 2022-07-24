@@ -2,7 +2,13 @@ import { Client, Message, PartialMessage } from 'discord.js';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import { DISCORD_APP_ID, DISCORD_PUBLIC_KEY, DISCORD_BOT_TOKEN } from './lib/enviroment';
 import { InitCommand, initTimestampChannelSelect } from './commands/init';
-import { ConfigCommand, templateEditorDiscard, templateEditorRun, templateEditorSave } from './commands/config';
+import {
+  ConfigCommand,
+  templateEditorDiscard,
+  templateEditorRun,
+  templateEditorSave,
+  templateEditorStart,
+} from './commands/config';
 import * as cron from 'node-cron';
 import sendTimestamp from './timestamp';
 import { DestroyCommand } from './commands/destroy';
@@ -33,6 +39,7 @@ creator
   .registerCommands([InitCommand, DestroyCommand, RefreshCommand, ConfigCommand])
   .syncCommands({ deleteCommands: true });
 
+creator.registerGlobalComponent('config-timestamp-template', templateEditorStart);
 creator.registerGlobalComponent('template-save', templateEditorSave);
 creator.registerGlobalComponent('template-discard', templateEditorDiscard);
 creator.registerGlobalComponent('init-timestamp-channel', initTimestampChannelSelect);
