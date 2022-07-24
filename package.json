@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "yarn@3.2.1",
   "scripts": {
+    "back": "pm2 start \"yarn start\" --name sky-timestamp-bot ",
     "serve": "node build/server.js",
     "start": "node build/bot.js",
     "build": "tsc",
