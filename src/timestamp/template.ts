@@ -1,7 +1,7 @@
 import { Template } from '../../prisma/build';
 import { calDailyReset, calEdenReset, calRecur, calTravelingSpirit } from './calculate';
 
-const propPattern = /\$\(\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\)/g;
+const propPattern = /\$\{\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\}/g;
 
 type DateToUnix<O extends Record<string, Date | number>> = {
   [K in keyof O]: number;
