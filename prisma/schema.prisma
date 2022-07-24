@@ -20,7 +20,7 @@ datasource db {
 model Guild {
   id String @id @db.VarChar(20) // Discord guild ID
 
-  webhooks        Webhook[]
+  Webhooks        Webhook[]
   TimestampConfig TimestampConfig?
 }
 
@@ -32,7 +32,7 @@ model Webhook {
 
   Guild           Guild            @relation(fields: [guildId], references: [id])
   TimestampConfig TimestampConfig?
-  Message         Message[]
+  Messages        Message[]
 }
 
 model Message {
@@ -56,11 +56,13 @@ model TimestampConfig {
 }
 
 model Template {
-  id        String          @id @default(uuid()) @db.Uuid
+  id        String @id @default(uuid()) @db.Uuid
   recordKey String
-  configId  String          @db.Uuid
+  configId  String @db.Uuid
   template  String
-  config    TimestampConfig @relation(fields: [configId], references: [id])
+
+  Config TimestampConfig @relation(fields: [configId], references: [id])
+  Record Record          @relation(fields: [recordKey], references: [key])
 
   @@unique([configId, recordKey])
 }
@@ -79,6 +81,8 @@ model Record {
   collectibleAfter Int?
 
   data Json?
+
+  Templates Template[]
 }
 
 enum RecordType {
