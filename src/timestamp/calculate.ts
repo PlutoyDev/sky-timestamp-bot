@@ -98,7 +98,7 @@ export function calRecur(date: Date, record: Record) {
     recordKey,
     occurrences: occurrences.filter(o => isSameDay(o, date)),
     next,
-    ongoingUntil,
+    ongoing_until: ongoingUntil,
     collectable: (prevColAvail && prevNotEnded) ?? false,
   };
 }

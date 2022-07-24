@@ -1,7 +1,7 @@
 import { Template } from '../../prisma/build';
-import { calDailyReset, calEdenReset, calRecur, calTravelingSpirit } from './calculate';
+import { calDailyReset, calEdenReset, calRecur, calTravelingSpirit, skyToUtc } from './calculate';
 
-const propPattern = /\$\{\s*(\w+)(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?(?:,\s*([^,)]*))?\s*\}/g;
+const propPattern = /\$\{\s*(\w+)(?:,\s*([^,}]*))?(?:,\s*([^,}]*))?(?:,\s*([^,}]*))?\s*\}/g;
 
 type DateToUnix<O extends Record<string, Date | number>> = {
   [K in keyof O]: number;
@@ -42,7 +42,7 @@ export type RecurData = {
   recordKey: string;
   occurrences: number[];
   next: number;
-  ongoingUntil?: number;
+  ongoing_until?: number;
   collectable: boolean;
 };
 
@@ -72,18 +72,22 @@ function timeFormatter(dt: number | null, format: string) {
 }
 
 function replacer(template: string, data: Record<string, any>) {
+  const now = Math.floor(Date.now() / 1000);
   return template.replace(propPattern, (full, prop, format, a2, a3) => {
-    if (data[prop] === undefined) {
+    if (data[prop] === undefined && prop !== 'now') {
       throw new Error(`Unknown property: ${prop}`);
     }
 
-    const value = data[prop];
+    const value = data[prop] as any;
 
-    if (value instanceof Array) {
+    if (prop === 'now') {
+      return timeFormatter(now, format);
+    } else if (value instanceof Array) {
       if (typeof value[0] === 'number') {
         return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
       }
     } else if (typeof value === 'number' || value === null) {
+      if (value < 4000) return value;
       return timeFormatter(value, format);
     }
 

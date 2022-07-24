@@ -3,6 +3,7 @@ import { APIMessage } from 'discord-api-types/v10';
 import { Routes } from 'discord-api-types/v10';
 import { Message, RecordType, Webhook } from '../../prisma/build';
 import { DiscordRest } from '../lib/discordRest';
+import { DEFAULT_UUID } from '../lib/enviroment';
 import prisma from '../lib/prisma';
 import redis from '../lib/redis';
 import { calDailyReset, calEdenReset, calRecur, calTravelingSpirit, skyToUtc } from './calculate';
@@ -14,6 +15,11 @@ export async function sendTimestamp() {
   const date = new Date();
 
   const config = await prisma.timestampConfig.findMany({
+    where: {
+      id: {
+        not: DEFAULT_UUID,
+      },
+    },
     include: {
       Webhook: {
         include: {
@@ -39,8 +45,8 @@ export async function sendTimestamp() {
     main_daily_reset: dailyReset,
     main_eden_reset: edenReset,
     main_traveling_spirit: ts,
-    ...recurData.reduce((obj, { recordKey, occurrences, next, ongoingUntil }) => {
-      obj[recordKey] = { occurrences, next, ongoingUntil };
+    ...recurData.reduce((obj, { recordKey, occurrences, next, ongoing_until }) => {
+      obj[recordKey] = { occurrences, next, ongoing_until };
       return obj;
     }, {} as Record<string, Record<string, any>>),
   };
@@ -78,8 +84,14 @@ export async function sendTimestamp() {
         eden_reset: edenReset,
         traveling_spirit: ts,
       } as MainData;
-      const content = renderMain(mainData, mainTemplate);
-      await sendUpdateMessage('main', content, Webhook);
+      try {
+        const content = renderMain(mainData, mainTemplate);
+        await sendUpdateMessage('main', content, Webhook);
+      } catch (e) {
+        if (typeof e === 'string') {
+          await sendUpdateMessage('main', `Error: ${e}`, Webhook);
+        }
+      }
     }
 
     const recurTemplate = Templates.filter(({ recordKey }) => recordKey.startsWith('recur'));
@@ -108,9 +120,10 @@ function allDateToUnix(o: Record<string, any>) {
 }
 
 async function sendUpdateMessage(name: string, content: string, webhook: Webhook & { Messages: Message[] }) {
-  const Message = webhook.Messages.find(({ usedFor }) => usedFor === name);
+  const msgIdx = webhook.Messages.findIndex(({ usedFor }) => usedFor === name);
 
-  if (Message) {
+  if (msgIdx > -1) {
+    const Message = webhook.Messages[msgIdx];
     try {
       await DiscordRest.patch(Routes.webhookMessage(webhook.id, webhook.token, Message.id), {
         auth: false,
@@ -121,6 +134,7 @@ async function sendUpdateMessage(name: string, content: string, webhook: Webhook
     } catch (e) {
       console.log(`Discord message deleted`);
       await prisma.message.delete({ where: { id: Message.id } });
+      webhook.Messages.splice(msgIdx, 1);
       sendUpdateMessage(name, content, webhook);
     }
   } else {
