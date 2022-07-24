@@ -1,13 +1,17 @@
 import { Client, Message, PartialMessage } from 'discord.js';
 import { GatewayServer, SlashCreator } from 'slash-create';
 import { DISCORD_APP_ID, DISCORD_PUBLIC_KEY, DISCORD_BOT_TOKEN } from './lib/enviroment';
-import { InitCommand } from './commands/init';
+import { InitCommand, initTimestampChannelSelect } from './commands/init';
 import { ConfigCommand, templateEditorDiscard, templateEditorRun, templateEditorSave } from './commands/config';
 import * as cron from 'node-cron';
 import sendTimestamp from './timestamp';
 import { DestroyCommand } from './commands/destroy';
 
-cron.schedule('0 */5 * * * *', () => sendTimestamp().then(() => void console.log('Done')));
+cron.schedule('0 */5 * * * *', () =>
+  sendTimestamp()
+    .then(() => void console.log('Done'))
+    .catch(e => void console.error(e)),
+);
 
 const client = new Client({
   intents: ['GUILD_MESSAGES', 'GUILDS'],
@@ -30,6 +34,7 @@ creator
 
 creator.registerGlobalComponent('template-save', templateEditorSave);
 creator.registerGlobalComponent('template-discard', templateEditorDiscard);
+creator.registerGlobalComponent('init-timestamp-channel', initTimestampChannelSelect);
 
 async function onMessageCU(message: Message | PartialMessage, newMessage?: Message | PartialMessage) {
   message = newMessage ?? message;

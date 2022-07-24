@@ -1,6 +1,7 @@
 import { APIGuildChannel, APIWebhook, ChannelType, GuildChannelType, Routes } from 'discord-api-types/v10';
-import { CommandContext, ComponentType, SlashCommand, SlashCreator } from 'slash-create';
+import { CommandContext, ComponentContext, ComponentType, SlashCommand, SlashCreator } from 'slash-create';
 import { DiscordRest } from '../lib/discordRest';
+import { DEFAULT_UUID } from '../lib/enviroment';
 import { prisma } from '../lib/prisma';
 
 export class InitCommand extends SlashCommand {
@@ -48,81 +49,81 @@ To change the the timestamp channel use \`/config timestamp channel\`
             components: [
               {
                 type: ComponentType.SELECT,
-                custom_id: `${guildId}-timestamp-channel`,
+                custom_id: `init-timestamp-channel`,
                 options: textChannelsSelect,
               },
             ],
           },
         ],
       });
+    }
+  }
+}
 
-      ctx.registerComponent(`${guildId}-timestamp-channel`, async cctx => {
-        const channelId = cctx.values[0];
-        if (channelId) {
-          const { id: webhookID, token: webhookToken } = (await DiscordRest.post(Routes.channelWebhooks(channelId), {
-            reason: `@${ctx.user.username} has initialized the bot`,
-            body: { name: 'Timestampy' },
-          })) as Required<APIWebhook>;
+export const initTimestampChannelSelect = async (cctx: ComponentContext) => {
+  const guildId = cctx.guildID;
+  const channelId = cctx.values[0];
+  if (channelId) {
+    const { id: webhookID, token: webhookToken } = (await DiscordRest.post(Routes.channelWebhooks(channelId), {
+      reason: `@${cctx.user.username} has initialized the bot`,
+      body: { name: 'Timestampy' },
+    })) as Required<APIWebhook>;
 
-          const webhook = await prisma.webhook.create({
-            data: {
-              id: webhookID,
-              token: webhookToken,
-              channelId: channelId,
+    const webhook = await prisma.webhook.create({
+      data: {
+        id: webhookID,
+        token: webhookToken,
+        channelId: channelId,
+        Guild: {
+          connect: {
+            id: guildId,
+          },
+        },
+        TimestampConfig: {
+          connectOrCreate: {
+            where: {
+              guildId: guildId,
+            },
+            create: {
               Guild: {
                 connect: {
                   id: guildId,
                 },
               },
-              TimestampConfig: {
-                connectOrCreate: {
-                  where: {
-                    id: guildId,
-                  },
-                  create: {
-                    Guild: {
-                      connect: {
-                        id: guildId,
-                      },
-                    },
-                  },
-                },
-              },
             },
-            include: {
-              TimestampConfig: true,
-            },
-          });
+          },
+        },
+      },
+      include: {
+        TimestampConfig: true,
+      },
+    });
 
-          const configId = webhook.TimestampConfig?.id;
+    const configId = webhook.TimestampConfig?.id;
 
-          await ctx.send('Timestamp channel updated');
+    await cctx.editParent({ content: 'Timestamp channel updated', components: [] });
 
-          if (!configId) {
-            return ctx.send('Something went wrong, please try again');
-          }
+    if (!configId) {
+      return cctx.sendFollowUp('Something went wrong while attempting to set default template, please try again');
+    }
 
-          const defaultTmpl = await prisma.template.findMany({
-            where: {
-              configId: '@default',
-            },
-            select: {
-              recordKey: true,
-              template: true,
-            },
-          });
+    const defaultTmpl = await prisma.template.findMany({
+      where: {
+        configId: DEFAULT_UUID,
+      },
+      select: {
+        recordKey: true,
+        template: true,
+      },
+    });
 
-          if (defaultTmpl) {
-            await prisma.template.createMany({
-              skipDuplicates: true,
-              data: defaultTmpl.map(t => ({ configId, ...t })),
-            });
-
-            await ctx.sendFollowUp('Default template has been applied.\nTo change it use `/config timestamp template`');
-          }
-        }
-        ctx.unregisterComponent(`${guildId}-timestamp-channel`);
+    if (defaultTmpl) {
+      await prisma.template.createMany({
+        skipDuplicates: true,
+        data: defaultTmpl.map(t => ({ configId, ...t })),
       });
+
+      await cctx.sendFollowUp('Default template has been applied.\nTo change it use `/config timestamp template`');
     }
   }
-}
+};
