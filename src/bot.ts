@@ -4,9 +4,9 @@ import { DISCORD_APP_ID, DISCORD_PUBLIC_KEY, DISCORD_BOT_TOKEN } from './lib/env
 import { InitCommand } from './commands/init';
 import { ConfigCommand, templateEditorDiscard, templateEditorRun, templateEditorSave } from './commands/config';
 import * as cron from 'node-cron';
-import { exec } from 'child_process';
+import sendTimestamp from './timestamp';
 
-cron.schedule('0 */5 * * * *', () => exec('yarn node build/timestamp/index.js'))
+cron.schedule('0 */5 * * * *', () => sendTimestamp().then(() => void console.log('Done') || process.exit(0)));
 
 const client = new Client({
   intents: ['GUILD_MESSAGES', 'GUILDS'],
