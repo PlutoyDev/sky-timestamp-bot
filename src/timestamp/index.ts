@@ -9,7 +9,7 @@ import { MainData, RecurData, renderMain, renderRecur } from './template';
 
 const isPartial = process.argv.includes('partial');
 
-(async () => {
+export async function sendTimestamp() {
   const date = new Date();
 
   const config = await prisma.timestampConfig.findMany({
@@ -66,7 +66,9 @@ const isPartial = process.argv.includes('partial');
 
     await sendUpdateMessage('recur', recurContent, Webhook);
   });
-})();
+}
+
+export default sendTimestamp;
 
 function allDateToUnix(o: Record<string, any>) {
   Object.entries(o).forEach(([key, value]) => {
