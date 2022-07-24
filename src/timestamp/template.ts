@@ -86,8 +86,8 @@ function replacer(template: string, data: Record<string, any>) {
       if (typeof value[0] === 'number') {
         return value.map(v => timeFormatter(v, format)).join(a2 ?? '➡️');
       }
-    } else if (typeof value === 'number' || value === null) {
-      if (value < 4000) return value;
+    } else if (typeof value === 'number') {
+      if (value < 4000) return value.toString();
       return timeFormatter(value, format);
     }
 
