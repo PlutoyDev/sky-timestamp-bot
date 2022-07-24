@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Enable yarn
+        run: corepack enable
       - name: Build
         run: yarn Build
       - name: Stopping previous instances
