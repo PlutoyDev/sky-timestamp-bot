@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Generate Prisma
+        run: yarn prisma generate
       - name: Build
         run: yarn build
       - name: Stopping previous instances
