@@ -1,5 +1,5 @@
-import { RecordType } from '../prisma/build';
-import prisma from './lib/prisma';
+import { RecordType } from '../../../prisma/build';
+import prisma from '../../lib/prisma';
 
 const clear = process.argv[2] === 'delete';
 
