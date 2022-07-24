@@ -231,12 +231,7 @@ export class ConfigCommand extends SlashCommand {
 
         await redis.setEx(cacheKey, 900, JSON.stringify(cacheValue));
         await ctx.send({
-          content: `Please send a new template for ${recordKey}
-Afterwards press the up arrow to edit and refine the new template
-Your current template is
-\`\`\`
-${prevTmpl}
-\`\`\``,
+          content: `Please send a new template for ${recordKey}\nAfterwards continue editing and refine the template by editing your message`,
           components: [
             {
               type: ComponentType.ACTION_ROW,
@@ -255,6 +250,12 @@ ${prevTmpl}
             },
           ],
         });
+        await ctx.sendFollowUp({
+          content: `Your current template is
+\`\`\`
+${prevTmpl}
+\`\`\``
+        })
       }
     }
 

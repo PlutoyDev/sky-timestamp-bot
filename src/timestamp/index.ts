@@ -4,6 +4,7 @@ import { Routes } from 'discord-api-types/v10';
 import { Message, RecordType, Webhook } from '../../prisma/build';
 import { DiscordRest } from '../lib/discordRest';
 import prisma from '../lib/prisma';
+import redis from '../lib/redis';
 import { calDailyReset, calEdenReset, calRecur, calTravelingSpirit, skyToUtc } from './calculate';
 import { MainData, RecurData, renderMain, renderRecur } from './template';
 
@@ -33,6 +34,31 @@ export async function sendTimestamp() {
   const ts = allDateToUnix(calTravelingSpirit(date));
   const recurData = recurRecords.map(record => allDateToUnix(calRecur(date, record))) as RecurData[];
 
+  //Caching
+  const cacheObj = {
+    main_daily_reset: dailyReset,
+    main_eden_reset: edenReset,
+    main_traveling_spirit: ts,
+    ...recurData.reduce((obj, { recordKey, occurrences, next, ongoingUntil }) => {
+      obj[recordKey] = { occurrences, next, ongoingUntil };
+      return obj;
+    }, {} as Record<string, Record<string, any>>),
+  };
+
+  Promise.all([
+    Object.entries(cacheObj).map(async ([f_grp, propVal]) =>
+      Object.entries(propVal).map(([prop, val]) => {
+        const key = `timestamp_${f_grp}_${prop}`;
+        if(val instanceof Array) {
+          redis.set(key, val.join(','))
+        } else {
+          redis.set(key, `${val}`)
+        }
+      })
+    ),
+  ]);
+
+  //Excute all webhook
   config.forEach(async c => {
     const { Templates, Webhook } = c;
 
@@ -87,10 +113,10 @@ async function sendUpdateMessage(name: string, content: string, webhook: Webhook
   if (Message) {
     try {
       await DiscordRest.patch(Routes.webhookMessage(webhook.id, webhook.token, Message.id), {
-        auth: false,
-        body: {
-          content,
-        },
+          auth: false,
+          body: {
+            content,
+          },
       });
     } catch (e) {
       console.log(`Discord message deleted`);
@@ -99,13 +125,13 @@ async function sendUpdateMessage(name: string, content: string, webhook: Webhook
     }
   } else {
     const { id: MessageId } = (await DiscordRest.post(Routes.webhook(webhook.id, webhook.token), {
-      auth: false,
-      query: new URLSearchParams({
+        auth: false,
+        query: new URLSearchParams({
         wait: 'true',
-      }),
-      body: {
-        content,
-      },
+        }),
+        body: {
+          content,
+        },
     })) as APIMessage;
 
     await prisma.message.create({

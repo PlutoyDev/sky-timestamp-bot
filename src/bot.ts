@@ -3,6 +3,10 @@ import { GatewayServer, SlashCreator } from 'slash-create';
 import { DISCORD_APP_ID, DISCORD_PUBLIC_KEY, DISCORD_BOT_TOKEN } from './lib/enviroment';
 import { InitCommand } from './commands/init';
 import { ConfigCommand, templateEditorDiscard, templateEditorRun, templateEditorSave } from './commands/config';
+import * as cron from 'node-cron';
+import { exec } from 'child_process';
+
+cron.schedule('0 */5 * * * *', () => exec('yarn node build/timestamp/index.js'))
 
 const client = new Client({
   intents: ['GUILD_MESSAGES', 'GUILDS'],
