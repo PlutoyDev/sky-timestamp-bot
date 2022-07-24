@@ -4,6 +4,7 @@ config();
 
 export const NODE_ENV = process.env.NODE_ENV ?? 'development';
 export const PORT = process.env.PORT ?? 2000;
+export const DEFAULT_UUID = process.env.DEFAULT_UUID ?? '27939831-7092-409d-a6c3-182d7739ec73';
 
 export const DISCORD_APP_ID = process.env.DISCORD_APP_ID ?? '990032179604099124';
 export const DISCORD_PUBLIC_KEY =
