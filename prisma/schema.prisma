@@ -62,7 +62,6 @@ model Template {
   template  String
 
   Config TimestampConfig @relation(fields: [configId], references: [id])
-  Record Record          @relation(fields: [recordKey], references: [key])
 
   @@unique([configId, recordKey])
 }
@@ -81,8 +80,6 @@ model Record {
   collectibleAfter Int?
 
   data Json?
-
-  Templates Template[]
 }
 
 enum RecordType {

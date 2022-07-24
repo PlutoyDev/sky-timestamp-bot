@@ -411,11 +411,7 @@ export async function templateEditorSave(ctx: ComponentContext) {
   await prisma.template.upsert({
     create: {
       template: data.newTmpl,
-      Record: {
-        connect: {
-          key: data.recordKey,
-        },
-      },
+      recordKey: data.recordKey,
       Config: {
         connect: {
           id: data.configId,
