@@ -17,7 +17,7 @@ export async function sendTimestamp() {
     include: {
       Webhook: {
         include: {
-          Message: true,
+          Messages: true,
         },
       },
       Templates: true,
@@ -107,8 +107,8 @@ function allDateToUnix(o: Record<string, any>) {
   return o;
 }
 
-async function sendUpdateMessage(name: string, content: string, webhook: Webhook & { Message: Message[] }) {
-  const Message = webhook.Message.find(({ usedFor }) => usedFor === name);
+async function sendUpdateMessage(name: string, content: string, webhook: Webhook & { Messages: Message[] }) {
+  const Message = webhook.Messages.find(({ usedFor }) => usedFor === name);
 
   if (Message) {
     try {

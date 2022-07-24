@@ -203,7 +203,7 @@ export class ConfigCommand extends SlashCommand {
         const existingPr = redis.get(cacheKey);
         const template = await prisma.template.findFirst({
           where: {
-            config: {
+            Config: {
               Guild: {
                 id: guildId,
               },
@@ -254,8 +254,8 @@ export class ConfigCommand extends SlashCommand {
           content: `Your current template is
 \`\`\`
 ${prevTmpl}
-\`\`\``
-        })
+\`\`\``,
+        });
       }
     }
 
@@ -411,8 +411,12 @@ export async function templateEditorSave(ctx: ComponentContext) {
   await prisma.template.upsert({
     create: {
       template: data.newTmpl,
-      recordKey: data.recordKey,
-      config: {
+      Record: {
+        connect: {
+          key: data.recordKey,
+        },
+      },
+      Config: {
         connect: {
           id: data.configId,
         },
